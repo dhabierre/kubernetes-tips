@@ -5,7 +5,8 @@ Kubernetes on AWS with Kops
 
 - [Installing Kubernetes on AWS with Kops](https://kubernetes.io/docs/getting-started-guides/kops/)
 - [AWS Workshop for Kubernetes](https://github.com/aws-samples/aws-workshop-for-kubernetes)
-
+- [Install the Windows Subsystem for Linux
+](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 ## Kubectl Installation
 
 ```sh
@@ -122,6 +123,7 @@ kops edit ig --name=dha.cluster.k8s.local master-eu-west-1a
 kops update cluster dha.cluster.k8s.local --yes
 kops validate cluster
 
+# get the DNS of the Kubernetes API
 aws elb describe-load-balancers --query 'LoadBalancerDescriptions[*].DNSName'
 ```
 
