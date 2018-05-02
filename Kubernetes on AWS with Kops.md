@@ -3,10 +3,12 @@ Kubernetes on AWS with Kops
 
 ## Inputs
 
+- [Kops - Kubernetes Operations](https://github.com/kubernetes/kops)
 - [Installing Kubernetes on AWS with Kops](https://kubernetes.io/docs/getting-started-guides/kops/)
 - [AWS Workshop for Kubernetes](https://github.com/aws-samples/aws-workshop-for-kubernetes)
 - [Install the Windows Subsystem for Linux
-](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+](https://docs.microsoft.com/en-us/windows/wsl/install-win10) (if using Windows 10)
+
 ## Kubectl Installation
 
 ```sh
@@ -60,7 +62,9 @@ export AWS_PROFILE=default
 
 ## Route53 domain
 
-Here we prefere to use [Gossip Protocol](https://en.wikipedia.org/wiki/Gossip_protocol). Report to [this page](https://github.com/aws-samples/aws-workshop-for-kubernetes/tree/master/01-path-basics/102-your-first-cluster) to know more about DNS-based.
+Here we prefere to use [Gossip Protocol](https://en.wikipedia.org/wiki/Gossip_protocol).
+
+Report to [this page](https://github.com/aws-samples/aws-workshop-for-kubernetes/tree/master/01-path-basics/102-your-first-cluster) to know more about DNS-based.
 
 ## S3 bucket
 
@@ -103,6 +107,8 @@ kops create cluster \
   --master-count 3 \
   --node-count 5 \
   --zones $AWS_AVAILABILITY_ZONES \
+  --node-size t2.medium \
+  --master-size t2.medium \
   --topology private \
   --networking-cidr 10.20.0.0/16
   --networking kube-router
