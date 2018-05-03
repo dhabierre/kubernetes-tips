@@ -12,7 +12,7 @@ Kubernetes on AWS with Kops
 ## Kubectl Installation
 
 ```sh
-apt-get update && apt-get install -y apt-transport-https
+apt-get update && apt-get install -y apt-transport-https curl
 
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
@@ -20,7 +20,7 @@ deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 
 apt-get update
-apt-get install kubectl
+apt-get install -y kubectl
 ```
 
 ## Kops Installation
@@ -39,7 +39,7 @@ mv kops-linux-amd64 /usr/local/bin/kops
 ### Installation
 
 ```sh
-pip -V || sudo apt-get install python-pip
+pip -V || apt-get install -y python-pip
 
 aws --version || pip install awscli --upgrade --user
 
@@ -60,6 +60,13 @@ Default output format [None]: json
 export AWS_PROFILE=default
 ```
 
+Launching a Kubernetes cluster hosted on AWS required a user with the folliwing simplified permissions
+- AmazonEC2FullAccess
+- AmazonRoute53FullAccess
+- AmazonS3FullAccess
+- IAMFullAccess
+- AmazonVPCFullAccess
+
 ## Route53 domain
 
 Here we prefere to use [Gossip Protocol](https://en.wikipedia.org/wiki/Gossip_protocol).
@@ -79,9 +86,8 @@ echo $AWS_AVAILABILITY_ZONES
 
 # create the S3 bucket
 # the bucket name must be unique otherwise you will encounter an error on deployment.
-# we will use an example bucket name of kops-state-store- and add a randomly generated string to the end.
 
-export S3_BUCKET=kops-state-store-$(cat /dev/urandom | LC_ALL=C tr -dc "[:alpha:]" | tr '[:upper:]' '[:lower:]' | head -c 32)
+export S3_BUCKET=kops-kubernetes-example-state-store
 export KOPS_STATE_STORE=s3://${S3_BUCKET}
 
 echo $S3_BUCKET
@@ -101,32 +107,37 @@ ssh -V || apt-get install -y ssh
 # create default ssh key (press ENTER for each choice)
 ssh-keygen -t rsa -b 4096 -C "your@email.com"
 
+export CLUSTER_NAME=dha.cluster.k8s.local
+
+echo $CLUSTER_NAME
+
 # create the cluster in private VPC
 kops create cluster \
-  --name dha.cluster.k8s.local \
+  --name $CLUSTER_NAME \
   --master-count 3 \
   --node-count 5 \
   --zones $AWS_AVAILABILITY_ZONES \
   --node-size t2.medium \
   --master-size t2.medium \
   --topology private \
-  --networking-cidr 10.20.0.0/16
-  --networking kube-router
+  --networking-cidr 10.20.0.0/16 \
+  --networking kube-router \
+  --state $KOPS_STATE_STORE
 
 kops get cluster
 
-kops edit cluster dha.cluster.k8s.local
+kops edit cluster $CLUSTER_NAME
 
-kops edit ig --name=dha.cluster.k8s.local nodes
+kops edit ig --name=$CLUSTER_NAME nodes
 
 # edit the configuration of a giver master
-kops edit ig --name=dha.cluster.k8s.local master-eu-west-1a
+kops edit ig --name=$CLUSTER_NAME master-eu-west-1a
 ```
 
 ## Create Cluster
 
 ```sh
-kops update cluster dha.cluster.k8s.local --yes
+kops update cluster $CLUSTER_NAME --yes
 kops validate cluster
 
 # get the DNS of the Kubernetes API
@@ -167,5 +178,5 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/mast
 ## Delete Cluster Resources
 
 ```sh
-kops delete cluster dha.cluster.k8s.local --yes
+kops delete cluster $CLUSTER_NAME --yes
 ```
