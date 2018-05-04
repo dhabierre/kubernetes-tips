@@ -217,8 +217,6 @@ curl $L5D_SVC_IP
 
 curl -H "Host: world.v2" $L5D_SVC_IP
 # earth (10.0.1.5)!
-
-./hello.sh 50
 ```
 
 Then openthe Linkerd Admin Dashboard: $L5D_SVC_IP:9990
