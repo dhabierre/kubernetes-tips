@@ -175,6 +175,103 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/mast
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/aws/patch-configmap-l4.yaml
 ```
 
+## Service Mesh
+
+The API is probably exposed to the Internet as well and you will get a lot of traffic to it. \
+You want more control of the traffic that goes to this API. Maybe you want to support many API versions, do canary deployments, and you want to watch and keep track of each request that comes in. This is where service mesh comes into play. It doesn't matter if you want to use [Linkerd](https://linkerd.io/), [Istio](https://istio.io/), or recently announced [Conduit](https://conduit.io/), principals are almost the same.
+
+Serice Mesh features
+- Load balancing
+- Fine-grained traffic policies
+- Service Discovery
+- Service Monitoring
+- Tracing
+- Metrics
+- Routing
+- Secure service-to-service communication
+- etc
+
+### Linkerd Ingress Controller
+
+- [More information](https://buoyant.io/2017/04/06/a-service-mesh-for-kubernetes-part-viii-linkerd-as-an-ingress-controller/)
+- [GitHub sources](https://github.com/linkerd/linkerd-examples/tree/master/k8s-daemonset)
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/linkerd/linkerd-examples/master/k8s-daemonset/k8s/linkerd-rbac.yml
+kubectl apply -f https://raw.githubusercontent.com/linkerd/linkerd-examples/master/k8s-daemonset/k8s/linkerd-ingress-controller.yml
+
+kubectl apply -f https://raw.githubusercontent.com/linkerd/linkerd-examples/master/k8s-daemonset/k8s/hello-world-ingress.yml
+kubectl apply -f https://github.com/linkerd/linkerd-examples/blob/master/k8s-daemonset/k8s/hello-world.yml
+kubectl apply -f https://github.com/linkerd/linkerd-examples/blob/master/k8s-daemonset/k8s/world-v2.yml
+
+kubectl get ingress
+#NAME          HOSTS      ADDRESS   PORTS     AGE
+#hello-world   world.v2             80        41s
+
+export L5D_SVC_IP=$(kubectl get svc l5d -o jsonpath="{.status.loadBalancer.ingress[0].*}")
+
+echo $L5D_SVC_IP
+
+curl $L5D_SVC_IP
+# world (10.0.4.7)!
+
+curl -H "Host: world.v2" $L5D_SVC_IP
+# earth (10.0.1.5)!
+
+./hello.sh 50
+```
+
+open Linkerd admin dashboard : $L5D_SVC_IP:9990
+
+## Install Helm / Tiller
+
+```sh
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+kubectl edit deploy --namespace kube-system tiller-deploy
+```
+
+Edit the YAML
+
+```yaml
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+automountServiceAccountToken: true
+[...]
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helm
+      name: tiller
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: helm
+        name: tiller
+    spec:
+      serviceAccount: tiller # <-- add or change this property
+      containers:
+      - env:
+        - name: TILLER_NAMESPACE
+          value: kube-system
+[...]
+```
+
+```sh
+kubectl --namespace=kube-system edit deployment/tiller-deploy # changed automountServiceAccountToken to true
+```
+
 ## Delete Cluster Resources
 
 ```sh
