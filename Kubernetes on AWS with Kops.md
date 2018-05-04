@@ -201,8 +201,8 @@ kubectl apply -f https://raw.githubusercontent.com/linkerd/linkerd-examples/mast
 kubectl apply -f https://raw.githubusercontent.com/linkerd/linkerd-examples/master/k8s-daemonset/k8s/linkerd-ingress-controller.yml
 
 kubectl apply -f https://raw.githubusercontent.com/linkerd/linkerd-examples/master/k8s-daemonset/k8s/hello-world-ingress.yml
-kubectl apply -f https://github.com/linkerd/linkerd-examples/blob/master/k8s-daemonset/k8s/hello-world.yml
-kubectl apply -f https://github.com/linkerd/linkerd-examples/blob/master/k8s-daemonset/k8s/world-v2.yml
+kubectl apply -f https://raw.githubusercontent.com/linkerd/linkerd-examples/master/k8s-daemonset/k8s/hello-world.yml
+kubectl apply -f https://raw.githubusercontent.com/linkerd/linkerd-examples/master/k8s-daemonset/k8s/world-v2.yml
 
 kubectl get ingress
 #NAME          HOSTS      ADDRESS   PORTS     AGE
