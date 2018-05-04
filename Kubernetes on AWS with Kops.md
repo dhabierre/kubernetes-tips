@@ -221,7 +221,7 @@ curl -H "Host: world.v2" $L5D_SVC_IP
 ./hello.sh 50
 ```
 
-open Linkerd admin dashboard : $L5D_SVC_IP:9990
+Then openthe Linkerd Admin Dashboard: $L5D_SVC_IP:9990
 
 ## Install Helm / Tiller
 
